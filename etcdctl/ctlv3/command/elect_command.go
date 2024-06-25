@@ -30,6 +30,7 @@ import (
 
 var (
 	electListen bool
+	ttl         int
 )
 
 // NewElectCommand returns the cobra command for "elect".
@@ -40,6 +41,7 @@ func NewElectCommand() *cobra.Command {
 		Run:   electCommandFunc,
 	}
 	cmd.Flags().BoolVarP(&electListen, "listen", "l", false, "observation mode")
+	cmd.Flags().IntVar(&ttl, "ttl", 60, "max timeout if elected leader fails")
 	return cmd
 }
 
@@ -101,7 +103,7 @@ func observe(c *clientv3.Client, election string) error {
 }
 
 func campaign(c *clientv3.Client, election string, prop string) error {
-	s, err := concurrency.NewSession(c)
+	s, err := concurrency.NewSession(c, concurrency.WithTTL(ttl))
 	if err != nil {
 		return err
 	}
